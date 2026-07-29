@@ -482,7 +482,7 @@
       <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
         <table class="striped" style="margin-bottom: 0;">
           <thead
-            style="position: sticky; top: 0; z-index: 10; background: var(--pico-background-color);"
+            style="position: sticky; top: 0; z-index: 10; background: var(--pico-background-color,#ffffff);"
           >
             <tr>
               <th scope="col">Datum</th>
