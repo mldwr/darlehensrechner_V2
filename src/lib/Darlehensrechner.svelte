@@ -4,20 +4,18 @@
     Calendar,
     DollarSign,
     Percent,
-    AlertCircle,
+    CircleAlert,
     Clock,
-    CheckCircle2,
-    Info,
     TrendingDown,
   } from "@lucide/svelte";
 
   // --- STATE ---
-  let calcMode = $state("years");
+  let calcMode = $state("years"); // 'years' = Wunschlaufzeit (Dynamische Rate), 'rate' = Feste Monatsrate
   let loanAmount = $state(188000);
   let interestRate = $state(0.9);
-  let targetYears = $state(10);
-  let monthlyRate = $state(1640.3);
-  let specialPaymentPercent = $state(5.0);
+  let targetYears = $state(10); // Jahre bis zur Volltilgung (wie im Beleg standardmäßig 10)
+  let monthlyRate = $state(1640.3); // Manuelle Rate (falls Modus 'rate')
+  let specialPaymentPercent = $state(5.0); // 5% Sondertilgung
   let specialPaymentMonth = $state(6);
   let startYear = $state(2026);
   let startMonth = $state(1);
@@ -81,6 +79,7 @@
     let monthCounter = 0;
     const MAX_MONTHS = 1200; // Schutz vor Endlosschleife
 
+    // Merken der initial berechneten Rate für die Anzeige in der Statistik
     const initialCalculatedRate = calculateAnnuityRate(
       loanAmount,
       rate,
@@ -90,14 +89,18 @@
     while (balance > 0.001 && monthCounter < MAX_MONTHS) {
       monthCounter++;
 
+      // Dynamische Neuberechnung der Rate basierend auf der aktuellen Restschuld!
       let activeRate = 0;
       if (calcMode === "years") {
+        // Restlaufzeit in Monaten für diesen Berechnungsschritt
         const remainingMonths = targetMonths - monthCounter + 1;
+        // Dynamische Neuberechnung der Rate basierend auf der aktuellen Restschuld!
         activeRate = calculateAnnuityRate(balance, rate, remainingMonths);
       } else {
         activeRate = monthlyRate;
       }
 
+      // Plausibilitätsprüfung
       let interest = (balance * rate) / 12;
       if (activeRate <= interest && specialPaymentAmt === 0) {
         return {
@@ -106,10 +109,12 @@
         };
       }
 
+      // 2. Sondertilgung prüfen (erst nach Ablauf des ersten Jahres = nach 12 Monaten)
       let isSpecialMonth =
         currentMonth === specialPaymentMonth && monthCounter > 12;
       let currentSpecialPayment = isSpecialMonth ? specialPaymentAmt : 0;
 
+      // Rate anpassen, falls die Restschuld inkl. Zinsen kleiner als die geplante Zahlung ist
       let totalPlannedPayment = activeRate + currentSpecialPayment;
       let actualPayment = 0;
       let actualInterest = interest;
@@ -117,6 +122,7 @@
       let actualSpecialPayment = 0;
 
       if (balance + interest <= totalPlannedPayment) {
+        // Letzter Monat: Vollständige Tilgung der Restschuld
         actualPayment = balance + interest;
         actualInterest = interest;
         actualPrincipal = balance;
@@ -128,6 +134,7 @@
         }
         balance = 0;
       } else {
+        // Regulärer Monat
         actualPayment = activeRate + currentSpecialPayment;
         actualPrincipal = activeRate - interest;
         actualSpecialPayment = currentSpecialPayment;
@@ -145,14 +152,16 @@
         specialPayment: actualSpecialPayment,
         balance: Math.max(0, balance),
         monthsElapsed: monthCounter,
-        calculatedRate: activeRate,
+        calculatedRate: activeRate, // Speichern für die tabellarische Verfolgung der Ratenreduktion
       });
 
+      // Summen für das laufende Jahr addieren
       yearlySums.zins += actualInterest;
       yearlySums.tilgung += actualPrincipal;
       yearlySums.sondertilgung += actualSpecialPayment;
       yearlySums.gesamt += actualPayment;
 
+      // Jahreswechsel oder Volltilgung -> Zwischensumme einfügen
       if (currentMonth === 12 || balance <= 0) {
         result.push({
           type: "year-summary",
@@ -180,6 +189,7 @@
       };
     }
 
+    // Statistiken berechnen
     const totals = result.reduce(
       (acc, row) => {
         if (row.type === "month") {
@@ -197,7 +207,7 @@
       totalInterest: totals.interest,
       totalSpecialPayments: totals.special,
       initialRate: calcMode === "years" ? initialCalculatedRate : monthlyRate,
-      finalRate: result[result.length - 2]?.calculatedRate || 0,
+      finalRate: result[result.length - 2]?.calculatedRate || 0, // Letzter regulärer Monat vor der Schlussrate
     };
   });
 </script>
@@ -459,7 +469,7 @@
       class="card bg-error"
       style="display: flex; gap: 1rem; align-items: flex-start;"
     >
-      <AlertCircle size={24} style="flex-shrink: 0; margin-top: 0.2rem;" />
+      <CircleAlert size={24} style="flex-shrink: 0; margin-top: 0.2rem;" />
       <p style="margin-bottom: 0;">{resultData.error}</p>
     </article>
   {/if}
