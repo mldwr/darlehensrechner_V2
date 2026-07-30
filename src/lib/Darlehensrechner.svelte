@@ -2,7 +2,7 @@
   import {
     Calculator,
     Calendar,
-    DollarSign,
+    Euro,
     Percent,
     CircleAlert,
     Clock,
@@ -328,7 +328,7 @@
       <div class="col-12 col-md-6 col-lg-4" style="margin-bottom: 1rem;">
         <label for="loan-amount">Kreditbetrag (€)</label>
         <div style="position: relative; display: flex; align-items: center;">
-          <DollarSign
+          <Euro
             size={20}
             style="position: absolute; left: 0.75rem; pointer-events: none; color: var(--pico-muted-color);"
           />
@@ -380,7 +380,7 @@
         <div class="col-12 col-md-6 col-lg-4" style="margin-bottom: 1rem;">
           <label for="monthly-rate">Monatliche Rate (€)</label>
           <div style="position: relative; display: flex; align-items: center;">
-            <DollarSign
+            <Euro
               size={20}
               style="position: absolute; left: 0.75rem; pointer-events: none; color: var(--pico-muted-color);"
             />
