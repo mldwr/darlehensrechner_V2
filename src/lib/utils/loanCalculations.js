@@ -54,7 +54,7 @@ export const calculateAnnuityRate = (principal, annualRate, remainingMonths) => 
  *   startYear: number,
  *   startMonth: number,
  * }} params
- * @returns {{ schedule: object[], monthsTotal: number, totalInterest: number, totalSpecialPayments: number, initialRate: number, finalRate: number } | { error: string }}
+ * @returns {{ schedule: Array<{ type?: string, year?: number, interest: number, principal: number, specialPayment: number, total?: number, payment?: number, balance?: number, dateStr?: string, calculatedRate?: number, month?: number, monthsElapsed?: number }>, monthsTotal: number, totalInterest: number, totalSpecialPayments: number, initialRate: number, finalRate: number } | { error: string }}
  */
 export const buildAmortizationSchedule = (params) => {
   const {

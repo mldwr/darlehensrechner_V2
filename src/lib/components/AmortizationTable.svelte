@@ -2,7 +2,7 @@
   import { CircleAlert } from "@lucide/svelte";
   import { formatCurrency } from "../utils/loanCalculations.js";
 
-  /** @type {{ error?: string, schedule?: object[], monthsTotal?: number }} */
+  /** @type {{ resultData: { error?: string, schedule?: Array<{ type?: string, year?: number, interest: number, principal: number, specialPayment: number, total?: number, payment?: number, balance?: number, dateStr?: string, calculatedRate?: number, month?: number, monthsElapsed?: number }>, monthsTotal?: number }, specialPaymentMonth?: number }} */
   let { resultData, specialPaymentMonth } = $props();
 </script>
 
@@ -25,7 +25,7 @@
     >
       <h2 style="margin: 0; font-size: 1.25rem;">Detaillierter Tilgungsplan</h2>
       <span class="badge">
-        Laufzeit: {Math.floor(resultData.monthsTotal / 12)} Jahre, {resultData.monthsTotal %
+        Laufzeit: {Math.floor((resultData.monthsTotal ?? 0) / 12)} Jahre, {(resultData.monthsTotal ?? 0) %
           12} Monate
       </span>
     </header>

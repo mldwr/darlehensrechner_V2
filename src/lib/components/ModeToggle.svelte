@@ -1,5 +1,5 @@
 <script>
-  /** @type {'years' | 'rate'} */
+  /** @type {{ calcMode: 'years' | 'rate' }} */
   let { calcMode = $bindable() } = $props();
 </script>
 

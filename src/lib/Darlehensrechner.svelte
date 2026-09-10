@@ -40,7 +40,7 @@
 
   <ModeToggle bind:calcMode />
 
-  {#if !resultData.error && resultData.schedule}
+  {#if 'schedule' in resultData && resultData.schedule}
     <StatCards
       initialRate={resultData.initialRate}
       finalRate={resultData.finalRate}
