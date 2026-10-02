@@ -9,13 +9,13 @@
   // --- STATE ---
   /** @type {'years' | 'rate'} */
   let calcMode = $state("years"); // 'years' = Wunschlaufzeit, 'rate' = Feste Monatsrate
-  let loanAmount = $state(188000);
-  let interestRate = $state(0.9);
-  let targetYears = $state(10);
-  let monthlyRate = $state(1640.3);
-  let specialPaymentPercent = $state(5.0);
-  let specialPaymentMonth = $state(6);
-  let startYear = $state(2018);
+  let loanAmount = $state(500000); // testwert: 188000
+  let interestRate = $state(2.3); // testwert: 0.9
+  let targetYears = $state(25); // testwert: 10
+  let monthlyRate = $state(2000); // testwert: 1640.3
+  let specialPaymentPercent = $state(1.8); // testwert: 5.0
+  let specialPaymentMonth = $state(6); // testwert: 6
+  let startYear = $state(2026); // testwert: 2018
   let startMonth = $state(1);
 
   // --- DERIVED: amortization schedule ---
