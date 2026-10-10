@@ -48,7 +48,7 @@
         <tbody>
           {#each resultData.schedule as row}
             {#if row.type === "year-summary"}
-              <tr class="bg-primary" style="font-weight: bold;">
+              <tr class="year-summary-row" style="font-weight: bold;">
                 <td>Summe {row.year}</td>
                 <td></td>
                 <td style="text-align: right;">{formatCurrency(row.interest)}</td>
@@ -71,7 +71,7 @@
                     </span>
                   {/if}
                 </td>
-                <td style="text-align: right; opacity: 0.8;">
+                <td style="text-align: right; ">
                   {formatCurrency(row.calculatedRate)}
                 </td>
                 <td
@@ -106,3 +106,12 @@
     </div>
   </article>
 {/if}
+
+<style>
+  /* Paint the cells (not the <tr>) so the summary background wins over the
+     mucss "table.striped" rule, which colors th/td on odd rows. */
+  .year-summary-row td {
+    background-color: var(--mu-primary) !important;
+    color: var(--mu-primary-inverse) !important;
+  }
+</style>
