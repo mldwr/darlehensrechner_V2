@@ -58,7 +58,7 @@
                 <td></td>
               </tr>
             {:else}
-              <tr class={row.specialPayment > 0 ? "bg-success" : ""}>
+              <tr class={row.specialPayment > 0 ? "special-payment-row" : ""}>
                 <td>
                   {row.dateStr}
                   {#if (row.monthsElapsed ?? 0) <= 12 && row.month === specialPaymentMonth}
@@ -112,6 +112,10 @@
      mucss "table.striped" rule, which colors th/td on odd rows. */
   .year-summary-row td {
     background-color: var(--mu-primary) !important;
+    color: var(--mu-primary-inverse) !important;
+  }
+  .special-payment-row td {
+    background-color: var(--mu-success) !important;
     color: var(--mu-primary-inverse) !important;
   }
 </style>
