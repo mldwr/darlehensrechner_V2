@@ -3,18 +3,40 @@
 </script>
 
 <!-- HEADER -->
-<header style="text-align: center; margin-bottom: 2rem;">
-  <h1
-    style="display: flex; align-items: center; justify-content: center; gap: 0.75rem;"
+<div style="position: relative;">
+  <a
+    href="https://orange-goose.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Orange Goose"
+    style="
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+    "
   >
-    <Calculator class="c-primary" size={32} />
-    Kreditrechner mit dynamischer Ratenreduktion
-  </h1>
-  <p>
-    Simuliere Ratenreduzierungen nach Sondertilgungen bei gleichbleibender
-    Laufzeit.
-  </p>
-</header>
+    <img
+      src="/orange_goose_logo.png"
+      alt="Orange Goose"
+      class="orange-goose-logo"
+    />
+  </a>
+
+  <header style="text-align: center; margin-bottom: 2rem;">
+    <h1
+      style="display: flex; align-items: center; justify-content: center; gap: 0.75rem;"
+    >
+      <Calculator class="c-primary" size={32} />
+      Kreditrechner mit dynamischer Ratenreduktion
+    </h1>
+    <p>
+      Simuliere Ratenreduzierungen nach Sondertilgungen bei gleichbleibender
+      Laufzeit.
+    </p>
+  </header>
+</div>
 
 <!-- INFOBOX -->
 <article
@@ -35,3 +57,17 @@
     </p>
   </div>
 </article>
+
+<style>
+  .orange-goose-logo {
+    height: 2rem;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .orange-goose-logo:hover {
+    opacity: 1;
+  }
+</style>
