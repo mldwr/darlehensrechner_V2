@@ -115,7 +115,7 @@
     color: var(--mu-primary-inverse) !important;
   }
   .special-payment-row td {
-    background-color: var(--mu-success) !important;
-    color: var(--mu-primary-inverse) !important;
+    background-color: var(--mu-secondary-background) !important;
+    color: var(--mu-secondary) !important;
   }
 </style>
