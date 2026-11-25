@@ -1,121 +1,222 @@
 <script>
-  import { CircleAlert } from "@lucide/svelte";
   import { formatCurrency } from "../utils/loanCalculations.js";
 
-  /** @type {{ resultData: { error?: string, schedule?: Array<{ type?: string, year?: number, interest: number, principal: number, specialPayment: number, total?: number, payment?: number, balance?: number, dateStr?: string, calculatedRate?: number, month?: number, monthsElapsed?: number }>, monthsTotal?: number }, specialPaymentMonth?: number }} */
-  let { resultData, specialPaymentMonth } = $props();
+  let { schedule, specialPaymentMonth, hasSpecialPayment } = $props();
+
+  let years = $derived.by(() => {
+    const grouped = new Map();
+
+    for (const row of schedule) {
+      if (row.type === "year-summary") continue;
+
+      if (!grouped.has(row.year)) {
+        grouped.set(row.year, {
+          year: row.year, months: [], payment: 0, interest: 0, principal: 0, specialPayment: 0, balance: 0,
+        });
+      }
+
+      const year = grouped.get(row.year);
+      year.months.push(row);
+      year.payment += row.payment;
+      year.interest += row.interest;
+      year.principal += row.principal;
+      year.specialPayment += row.specialPayment;
+      year.balance = row.balance;
+    }
+
+    return [...grouped.values()];
+  });
 </script>
 
-<!-- FEHLERMELDUNG -->
-{#if resultData.error}
-  <article
-    class="card bg-error"
-    style="display: flex; gap: 1rem; align-items: flex-start;"
-  >
-    <CircleAlert size={24} style="flex-shrink: 0; margin-top: 0.2rem;" />
-    <p style="margin-bottom: 0;">{resultData.error}</p>
-  </article>
-{/if}
+<section class="loan-panel schedule" aria-labelledby="schedule-title">
+  <h2 id="schedule-title">Tilgungsplan</h2>
+  <p class="intro">Wähle ein Jahr, um die Monatszahlungen zu sehen.</p>
 
-<!-- TILGUNGSPLAN TABELLE -->
-{#if !resultData.error && resultData.schedule}
-  <article class="card" style="padding: 0; overflow: hidden;">
-    <header
-      style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: var(--pico-card-sectioning-background-color);"
-    >
-      <h2 style="margin: 0; font-size: 1.25rem;">Detaillierter Tilgungsplan</h2>
-      <span class="badge">
-        Laufzeit: {Math.floor((resultData.monthsTotal ?? 0) / 12)} Jahre, {(resultData.monthsTotal ?? 0) %
-          12} Monate
-      </span>
-    </header>
-
-    <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
-      <table class="striped" style="margin-bottom: 0;">
-        <thead
-          style="position: sticky; top: 0; z-index: 10; background: var(--pico-background-color, #ffffff);"
-        >
-          <tr>
-            <th scope="col">Datum</th>
-            <th scope="col" style="text-align: right;">Monatliche Rate (Basis)</th>
-            <th scope="col" style="text-align: right;">Zinsen</th>
-            <th scope="col" style="text-align: right;">Tilgung</th>
-            <th scope="col" style="text-align: right;" class="c-primary">Sondertilgung</th>
-            <th scope="col" style="text-align: right;">Zahlung Gesamt</th>
-            <th scope="col" style="text-align: right;">Restkapital</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each resultData.schedule as row}
-            {#if row.type === "year-summary"}
-              <tr class="year-summary-row" style="font-weight: bold;">
-                <td>Summe {row.year}</td>
-                <td></td>
-                <td style="text-align: right;">{formatCurrency(row.interest)}</td>
-                <td style="text-align: right;">{formatCurrency(row.principal)}</td>
-                <td style="text-align: right;">{formatCurrency(row.specialPayment)}</td>
-                <td style="text-align: right;">{formatCurrency(row.total)}</td>
-                <td></td>
+  <div class="years">
+    {#each years as year (year.year)}
+      <details>
+        <summary>
+          <span class="year-label">{year.year}</span>
+          <span class="metric">Zahlungen <strong class="money">{formatCurrency(year.payment)}</strong></span>
+          <span class="metric">Zinsen <strong class="money">{formatCurrency(year.interest)}</strong></span>
+          <span class="metric">Restschuld <strong class="money">{formatCurrency(year.balance)}</strong></span>
+        </summary>
+        <p class="scroll-hint" id={`scroll-${year.year}`}>
+          Falls Spalten abgeschnitten sind, wische seitlich oder nutze die Pfeiltasten im fokussierten Tabellenbereich.
+        </p>
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex (The scroll container needs a tab stop for keyboard scrolling.) -->
+        <div class="table-scroll" role="region" aria-label={`Monatszahlungen ${year.year}`}
+          aria-describedby={`scroll-${year.year}`} tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Monat</th>
+                <th scope="col">Reguläre Rate</th>
+                <th scope="col">Zinsen</th>
+                <th scope="col">Tilgung</th>
+                <th scope="col">Sondertilgung</th>
+                <th scope="col">Gesamtzahlung</th>
+                <th scope="col">Restschuld</th>
               </tr>
-            {:else}
-              <tr class={row.specialPayment > 0 ? "special-payment-row" : ""}>
-                <td>
-                  {row.dateStr}
-                  {#if (row.monthsElapsed ?? 0) <= 12 && row.month === specialPaymentMonth}
-                    <span
-                      class="badge bg-warning"
-                      style="margin-left: 0.5rem;"
-                      title="Gesperrt im 1. Jahr"
-                    >
-                      Sperre
-                    </span>
-                  {/if}
-                </td>
-                <td style="text-align: right; ">
-                  {formatCurrency(row.calculatedRate)}
-                </td>
-                <td
-                  style="text-align: right;"
-                  class={row.specialPayment > 0 ? "" : "c-error"}
-                >
-                  {formatCurrency(row.interest)}
-                </td>
-                <td
-                  style="text-align: right;"
-                  class={row.specialPayment > 0 ? "" : "c-success"}
-                >
-                  {formatCurrency(row.principal)}
-                </td>
-                <td
-                  style="text-align: right; font-weight: bold;"
-                  class={row.specialPayment > 0 ? "" : "c-primary"}
-                >
-                  {row.specialPayment > 0 ? formatCurrency(row.specialPayment) : "-"}
-                </td>
-                <td style="text-align: right; font-weight: bold;">
-                  {formatCurrency(row.payment)}
-                </td>
-                <td style="text-align: right; font-weight: bold;">
-                  {formatCurrency(row.balance)}
-                </td>
+            </thead>
+            <tbody>
+              {#each year.months as row (row.month)}
+                <tr>
+                  <th scope="row">{row.dateStr}</th>
+                  <td>{formatCurrency(row.calculatedRate)}</td>
+                  <td>{formatCurrency(row.interest)}</td>
+                  <td>{formatCurrency(row.principal)}</td>
+                  <td class:special={row.specialPayment > 0}>
+                    {#if row.specialPayment > 0}
+                      {formatCurrency(row.specialPayment)}
+                    {:else if hasSpecialPayment && row.monthsElapsed <= 12 && row.month === specialPaymentMonth}
+                      <span class="unavailable">Noch nicht möglich</span>
+                    {:else}
+                      –
+                    {/if}
+                  </td>
+                  <td>{formatCurrency(row.payment)}</td>
+                  <td>{formatCurrency(row.balance)}</td>
+                </tr>
+              {/each}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row">Jahressumme</th>
+                <td>–</td>
+                <td>{formatCurrency(year.interest)}</td>
+                <td>{formatCurrency(year.principal)}</td>
+                <td>{formatCurrency(year.specialPayment)}</td>
+                <td>{formatCurrency(year.payment)}</td>
+                <td>{formatCurrency(year.balance)}</td>
               </tr>
-            {/if}
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </article>
-{/if}
+            </tfoot>
+          </table>
+        </div>
+      </details>
+    {/each}
+  </div>
+</section>
 
 <style>
-  /* Paint the cells (not the <tr>) so the summary background wins over the
-     mucss "table.striped" rule, which colors th/td on odd rows. */
-  .year-summary-row td {
-    background-color: var(--mu-primary) !important;
-    color: var(--mu-primary-inverse) !important;
+  .intro, .scroll-hint {
+    color: var(--loan-muted);
+    font-size: 0.875rem;
   }
-  .special-payment-row td {
-    background-color: var(--mu-secondary-background) !important;
-    color: var(--mu-secondary) !important;
+
+  .intro {
+    margin: 0.3rem 0 1rem;
+  }
+
+  .years {
+    border-top: 1px solid var(--loan-border);
+  }
+
+  details {
+    margin: 0;
+    border-bottom: 1px solid var(--loan-border);
+  }
+
+  summary {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, 0.6fr) repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.45rem 0.75rem;
+    min-block-size: 44px;
+    margin: 0;
+    padding: 0.65rem 0.5rem;
+    color: var(--loan-ink);
+    cursor: pointer;
+  }
+
+  summary:hover, details[open] > summary {
+    background: var(--loan-tint);
+  }
+
+  details > summary::after {
+    display: none;
+  }
+
+  .year-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--loan-accent);
+    font-weight: 700;
+  }
+
+  .year-label::before {
+    content: "";
+    inline-size: 0.4em;
+    block-size: 0.4em;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(-45deg);
+  }
+
+  details[open] .year-label::before {
+    transform: rotate(45deg);
+  }
+
+  .metric {
+    display: grid;
+    font-size: 0.8rem;
+    color: var(--loan-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .metric strong {
+    font-size: 0.875rem;
+    color: var(--loan-ink);
+  }
+
+  .scroll-hint {
+    margin: 0.65rem 0 0.35rem;
+  }
+
+  .table-scroll {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    margin-bottom: 0.65rem;
+  }
+
+  table {
+    margin: 0;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th, td {
+    padding: 0.6rem;
+    border-color: var(--loan-border);
+    background: var(--loan-panel);
+    color: var(--loan-ink);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  thead th, tfoot :is(th, td) {
+    background: var(--loan-tint);
+    font-weight: 650;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  .special {
+    color: var(--loan-accent);
+    font-weight: 700;
+  }
+
+  .unavailable {
+    font-size: 0.8rem;
+    color: var(--loan-muted);
+  }
+
+  @media (max-width: 34rem) {
+    summary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 </style>
