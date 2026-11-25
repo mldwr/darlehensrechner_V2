@@ -26,15 +26,34 @@
 
     return [...grouped.values()];
   });
+
+  /** @type {Record<number, boolean>} */
+  let openYears = $state({});
+  let allYearsOpen = $derived(years.every(({ year }) => openYears[year]));
+
+  function toggleAllYears() {
+    openYears = allYearsOpen
+      ? {}
+      : Object.fromEntries(years.map(({ year }) => [year, true]));
+  }
 </script>
 
 <section class="loan-panel schedule" aria-labelledby="schedule-title">
-  <h2 id="schedule-title">Tilgungsplan</h2>
-  <p class="intro">Wähle ein Jahr, um die Monatszahlungen zu sehen.</p>
+  <header class="schedule-header">
+    <div>
+      <h2 id="schedule-title">Tilgungsplan</h2>
+      <p class="intro">Wähle ein Jahr, um die Monatszahlungen zu sehen.</p>
+    </div>
+    {#if years.length}
+      <button class="toggle-years" type="button" aria-controls="schedule-years" onclick={toggleAllYears}>
+        {allYearsOpen ? "Alle Jahre zuklappen" : "Alle Jahre aufklappen"}
+      </button>
+    {/if}
+  </header>
 
-  <div class="years">
+  <div class="years" id="schedule-years">
     {#each years as year (year.year)}
-      <details>
+      <details bind:open={openYears[year.year]}>
         <summary>
           <span class="year-label">{year.year}</span>
           <span class="metric">Zahlungen <strong class="money">{formatCurrency(year.payment)}</strong></span>
@@ -99,13 +118,39 @@
 </section>
 
 <style>
+  .schedule-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .toggle-years {
+    min-block-size: 44px;
+    max-inline-size: 100%;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    background: var(--loan-panel);
+    border: 1px solid var(--loan-control-border);
+    border-radius: 0.45rem;
+    color: var(--loan-accent);
+    font-size: 0.875rem;
+    font-weight: 650;
+  }
+
+  .toggle-years:hover {
+    background: var(--loan-tint);
+  }
+
   .intro, .scroll-hint {
     color: var(--loan-muted);
     font-size: 0.875rem;
   }
 
   .intro {
-    margin: 0.3rem 0 1rem;
+    margin: 0.3rem 0 0;
   }
 
   .years {
