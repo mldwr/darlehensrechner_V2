@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import ModeToggle from "./ModeToggle.svelte";
   import { formatCurrency, getMonthName } from "../utils/loanCalculations.js";
 
@@ -7,7 +7,15 @@
   let annualPayment = $derived((values.loanAmount * values.specialPaymentPercent) / 100);
 </script>
 
-{#snippet numberField(key, id, label, min, max = undefined, step = "any", hint = "")}
+{#snippet numberField(
+  key: string,
+  id: string,
+  label: string,
+  min: number,
+  max: number | undefined = undefined,
+  step: number | "any" = "any",
+  hint = "",
+)}
   <div>
     <label for={id}>{label}</label>
     <input
