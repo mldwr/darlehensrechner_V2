@@ -40,7 +40,7 @@
 
   <div class="fields">
     {@render numberField("loanAmount", "loan-amount", "Darlehensbetrag (€)", 0.01)}
-    {@render numberField("interestRate", "interest-rate", "Sollzins pro Jahr (%)", 0)}
+    {@render numberField("interestRate", "interest-rate", "Sollzins pro Jahr (%)", 0, undefined, 0.1)}
     {#if calcMode === "years"}
       {@render numberField("targetYears", "target-years", "Wunschlaufzeit (Jahre)", 1, 60, 1)}
     {:else}
@@ -66,7 +66,7 @@
         "Anteil am Darlehensbetrag (%)",
         0,
         undefined,
-        "any",
+        0.1,
         !errors.loanAmount && Number.isFinite(annualPayment)
           ? `${formatCurrency(annualPayment)} pro Jahr geplant.`
           : "",
